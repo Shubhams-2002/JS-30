@@ -17,6 +17,56 @@
   </form>
 <script>
 const endpoint = 'https://gist.githubusercontent.com/Miserlou/c5cd8364bf9b2420bb29/raw/2bf258763cdddd704f8ffd3ea9a3e81d25e2c6f6/cities.json';
+const places = [];
+fetch(endpoint)                             // fetch from endpoint url
+    .then(blob => blob.json())              // receiving data we don't know much about but in raw JSON, convert it to JSON object
+    .then(data => places.push(...data));    // data is an array, if spread it and push all it elements
+
+function findMatches(wordToMatch, places) {
+    // we can't directly add a variable in form of raw regex to match fn as param, we first create a RegEx
+    const regex = RegExp(wordToMatch, 'gi');  // g = search globally, i = case insensitive
+    return places.filter(place => {
+      return place.city.match(regex) || place.state.match(regex);
+    });
+}
+
+function numberWithCommas(x) {
+  return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+/*
+    2 lookahead assertions, it performs match but does not capture match, returning true or folse
+    positive one, ?=\(d{3})+ , finds 3 digits together
+    negative one, ?!\d , checks if there is any other digit remaining after matched sets of 3
+    so it basically matches 3 digits and checks any digit remaining to the left
+    The \B keeps the regex from putting a comma at the beginning of the string.
+*/
+
+function displayMatches() {
+  const matchedPlaces = findMatches(this.value, places);
+  const regex = RegExp(this.value, 'gi');
+  
+  const html = matchedPlaces.map(place => {
+    const cityName = place.city.replace(regex,  `<span class="hl">${place.city.match(regex)}</span>`);
+    const stateName = place.state.replace(regex, `<span class="hl">${this.value}</span>`);
+    // rather than putting input value inside highlight tag, put the matched part itself
+    // as the prior one displays a bug related to case insensitive search
+    return `
+    <li>
+      <span class="name"> ${cityName}, ${stateName} </span>
+      <span class="population"> ${numberWithCommas(place.population)}</span>
+    </li>
+    `;
+  }).join('');
+  // map each place to list item html and join it
+  suggestions.innerHTML = html;
+  // replace the HTML of suggestions class by html of list items
+}
+
+const searchInput = document.querySelector('.search');
+const suggestions = document.querySelector('.suggestions');
+
+searchInput.addEventListener('change', displayMatches);
+searchInput.addEventListener('keyup', displayMatches);
 
 </script>
 </body>
