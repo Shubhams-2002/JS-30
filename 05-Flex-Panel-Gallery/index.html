@@ -33,6 +33,7 @@
       .panels {
         min-height: 100vh;
         overflow: hidden;
+        display: flex;
       }
 
       .panel {
@@ -48,6 +49,10 @@
         font-size: 20px;
         background-size: cover;
         background-position: center;
+        flex: 1;                        /* flex child property */
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
       }
 
       .panel1 {
@@ -71,6 +76,11 @@
         margin: 0;
         width: 100%;
         transition: transform 0.5s;
+        flex: 1;                        /* p-tags should take equal space in column */
+        display: flex;                  /* we need this because the text itself is the child of p tag */
+                                        /* panel > panels > p-tag > text */
+        justify-content: center;        /* horizontal alignment as default flex direction is horizontal*/
+        align-items: center;            /* now we are able to align text in the middle */
       }
 
       .panel p {
@@ -84,8 +94,23 @@
         font-size: 4em;
       }
 
+      .panel > *:first-child {
+        transform: translateY(-100%);
+      }
+      .panel.open-active > *:first-child {
+        transform: translateY(0);
+      }
+
+      .panel > *:last-child {
+        transform: translateY(100%);
+      }
+      .panel.open-active > *:last-child {
+        transform: translateY(0);
+      }
+
       .panel.open {
         font-size: 40px;
+        flex: 5;
       }
     </style>
 
@@ -116,7 +141,34 @@
         <p>Motion</p>
       </div>
     </div>
+    
+    <script>
+        const panels = document.querySelectorAll('.panel');
+        
+        function toggleOpen() {
+            this.classList.toggle('open');
+            console.log('a');
+        }
 
-    <script></script>
+        function toggleActive(e) {
+            if( e.propertyName.includes('flex') ) {
+                this.classList.toggle('open-active');
+                console.log('b');
+            }
+        }
+        /* we define 2 different functions because we want the top and bottom words 
+        to enter after the transition of panel open is completed */
+
+        panels.forEach(panel => panel.addEventListener('click', toggleOpen));
+        panels.forEach(panel => panel.addEventListener('transitionend', toggleActive));
+        /*  when user clicks to open, 
+            event listener listens click and changes panel -> panel.open, 
+            this transitions end is listened and changes panel.open -> panel.open-active
+            when user clicks to close, 
+            event listener listens click and changes panel.open -> panel, 
+            this transitions end is listened and changes panel.open-active -> panel */
+
+    </script>
+
   </body>
 </html>
